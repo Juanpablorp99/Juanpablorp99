@@ -1,45 +1,88 @@
-const form = document.getElementById('orderForm');
-const msg = document.getElementById('msg');
+const precios = [25, 25, 20, 20];
 
-form.addEventListener('submit', async (e) => {
-    e.preventDefault();
+const checkboxes = [
+  document.getElementById("hamburguesa1"),
+  document.getElementById("hamburguesa2"),
+  document.getElementById("hamburguesa3"),
+  document.getElementById("hamburguesa4"),
+];
 
-    const pedidos = [];
-    form.querySelectorAll('input[name="pedido"]:checked').forEach(item => {
-        pedidos.push(item.value);
-    });
+const cantidades = [
+  document.getElementById("cantidad1"),
+  document.getElementById("cantidad2"),
+  document.getElementById("cantidad3"),
+  document.getElementById("cantidad4"),
+];
 
-    if (pedidos.length === 0) {
-        msg.textContent = "Por favor selecciona al menos una hamburguesa.";
-        msg.className = 'text-danger';
-        return;
+checkboxes.forEach((checkbox, index) => {
+  checkbox.addEventListener("change", () => {
+    cantidades[index].disabled = !checkbox.checked;
+    if (!checkbox.checked) {
+      cantidades[index].value = "";
     }
+    calcularTotal();
+  });
 
-    const data = {
-        pedidos: pedidos.join(', '),
-        fecha: new Date().toISOString()
-    };
-
-    // Reemplaza con tu URL del Webhook de Google Apps Script
-    const url = 'https://script.google.com/macros/s/AKfycbw5JAebl5gbRr28yuXmwa41fpB25FsE-saLxcneL30XScjGerzgwM715VbTlidOLqj6xg/exec';
-
-    try {
-        const response = await fetch(url, {
-            method: 'POST',
-            body: JSON.stringify(data),
-            headers: { 'Content-Type': 'application/json' }
-        });
-
-        if (response.ok) {
-            msg.textContent = "¡Pedido enviado exitosamente!";
-            msg.className = 'text-success';
-            form.reset();
-        } else {
-            msg.textContent = "Error al enviar el pedido.";
-            msg.className = 'text-danger';
-        }
-    } catch (error) {
-        msg.textContent = "Error de conexión.";
-        msg.className = 'text-danger';
-    }
+  cantidades[index].addEventListener("input", calcularTotal);
 });
+
+function calcularTotal() {
+  let total = 0;
+  checkboxes.forEach((checkbox, index) => {
+    if (checkbox.checked && cantidades[index].value) {
+      total += precios[index] * parseInt(cantidades[index].value);
+    }
+  });
+  document.getElementById("totalDisplay").innerText = total;
+}
+
+function generarIDPedido() {
+  const fecha = new Date();
+  const id =
+    "Pedido_" +
+    fecha.getFullYear() +
+    String(fecha.getMonth() + 1).padStart(2, "0") +
+    String(fecha.getDate()).padStart(2, "0") +
+    String(fecha.getHours()).padStart(2, "0") +
+    String(fecha.getMinutes()).padStart(2, "0") +
+    String(fecha.getSeconds()).padStart(2, "0");
+  return id;
+}
+
+function enviarPedido() {
+  let productos = "";
+  let total = 0;
+
+  checkboxes.forEach((checkbox, index) => {
+    if (checkbox.checked && cantidades[index].value) {
+      productos += `${checkbox.nextElementSibling.innerText} x ${cantidades[index].value}\n`;
+      total += precios[index] * parseInt(cantidades[index].value);
+    }
+  });
+
+  if (productos === "") {
+    alert("Por favor, selecciona al menos un producto.");
+    return;
+  }
+
+  const idPedido = generarIDPedido();
+
+  fetch("https://script.google.com/macros/s/AKfycbxBpsvnskGPU6ybLldatlW91BwWBrWjxZDv9HszSyEjZCsLLjgVIcHu2tUhahdT5hKC_Q/exec", {
+    method: "POST",
+    body: JSON.stringify({ idPedido, productos, total }),
+    headers: { "Content-Type": "application/json" },
+  })
+    .then((res) => res.text())
+    .then((data) => {
+      document.getElementById(
+        "estado"
+      ).innerHTML = `¡Pedido guardado!<br>ID Pedido: <strong>${idPedido}</strong>`;
+      document.getElementById("pedidoForm").reset();
+      cantidades.forEach((campo) => (campo.disabled = true));
+      document.getElementById("totalDisplay").innerText = "0";
+    })
+    .catch((err) => {
+      console.error(err);
+      alert("Hubo un problema al guardar el pedido.");
+    });
+}
