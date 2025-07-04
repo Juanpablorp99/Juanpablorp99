@@ -89,6 +89,6 @@ document.addEventListener("DOMContentLoaded", () => {
       .catch((err) => {
         console.error(err);
         alert("Hubo un problema al guardar el pedido.");
-      });
+    });  
   });
 });
