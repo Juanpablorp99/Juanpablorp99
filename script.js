@@ -69,14 +69,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const idPedido = generarIDPedido();
 
-    fetch(
-      "https://script.google.com/macros/s/AKfycbxBpsvnskGPU6ybLldatlW91BwWBrWjxZDv9HszSyEjZCsLLjgVIcHu2tUhahdT5hKC_Q/exec",
-      {
-        method: "POST",
-        body: JSON.stringify({ idPedido, productos, total }),
-        headers: { "Content-Type": "application/json" },
-      }
-    )
+    fetch("https://script.google.com/macros/s/AKfycbxnR7l9YagN37bfj3jepatt2mq8-yxKTDfpHdmNiXJzx-XBK42A9qRVnqd0_afzx_eGyQ/exec",
+      {method: "POST", body: JSON.stringify({ idPedido, productos, total }),headers: { "Content-Type": "application/json" },})
       .then((res) => res.text())
       .then((data) => {
         document.getElementById(
