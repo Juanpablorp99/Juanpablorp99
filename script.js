@@ -1,88 +1,39 @@
-document.addEventListener("DOMContentLoaded", () => {
-  const precios = [25, 25, 20, 20];
+<script type="module">
+      import { createChat } from 'https://cdn.jsdelivr.net/npm/@n8n/chat/dist/chat.bundle.es.js';
 
-  const checkboxes = [
-    document.getElementById("hamburguesa1"),
-    document.getElementById("hamburguesa2"),
-    document.getElementById("hamburguesa3"),
-    document.getElementById("hamburguesa4"),
-  ];
-
-  const cantidades = [
-    document.getElementById("cantidad1"),
-    document.getElementById("cantidad2"),
-    document.getElementById("cantidad3"),
-    document.getElementById("cantidad4"),
-  ];
-
-  checkboxes.forEach((checkbox, index) => {
-    checkbox.addEventListener("change", () => {
-      cantidades[index].disabled = !checkbox.checked;
-      if (!checkbox.checked) {
-        cantidades[index].value = "";
-      }
-      calcularTotal();
-    });
-
-    cantidades[index].addEventListener("input", calcularTotal);
-  });
-
-  function calcularTotal() {
-    let total = 0;
-    checkboxes.forEach((checkbox, index) => {
-      if (checkbox.checked && cantidades[index].value) {
-        total += precios[index] * parseInt(cantidades[index].value);
-      }
-    });
-    document.getElementById("totalDisplay").innerText = total;
-  }
-
-  function generarIDPedido() {
-    const fecha = new Date();
-    const id =
-      "Pedido_" +
-      fecha.getFullYear() +
-      String(fecha.getMonth() + 1).padStart(2, "0") +
-      String(fecha.getDate()).padStart(2, "0") +
-      String(fecha.getHours()).padStart(2, "0") +
-      String(fecha.getMinutes()).padStart(2, "0") +
-      String(fecha.getSeconds()).padStart(2, "0");
-    return id;
-  }
-
-  document.getElementById("btnEnviar").addEventListener("click", () => {
-    let productos = "";
-    let total = 0;
-
-    checkboxes.forEach((checkbox, index) => {
-      if (checkbox.checked && cantidades[index].value && parseInt(cantidades[index].value) > 0)
-        {
-            productos += `${checkbox.nextElementSibling.innerText} x ${cantidades[index].value}\n`;
-            total += precios[index] * parseInt(cantidades[index].value);
-        }
-    });
-
-    if (productos === "") {
-      alert("Por favor, selecciona al menos un producto.");
-      return;
-    }
-
-    const idPedido = generarIDPedido();
-
-    fetch("https://script.google.com/macros/s/AKfycbxnR7l9YagN37bfj3jepatt2mq8-yxKTDfpHdmNiXJzx-XBK42A9qRVnqd0_afzx_eGyQ/exec",
-      {method: "POST", body: JSON.stringify({ idPedido, productos, total }),headers: { "Content-Type": "application/json" },})
-      .then((res) => res.text())
-      .then((data) => {
-        document.getElementById(
-          "estado"
-        ).innerHTML = `¡Pedido guardado!<br>ID Pedido: <strong>${idPedido}</strong>`;
-        document.getElementById("pedidoForm").reset();
-        cantidades.forEach((campo) => (campo.disabled = true));
-        document.getElementById("totalDisplay").innerText = "0";
-      })
-      .catch((err) => {
-        console.error(err);
-        alert("Hubo un problema al guardar el pedido.");
-    });  
-  });
-});
+      createChat({
+        webhookUrl: 'http://159.69.209.82:5678/webhook/2119a4b5-c7b0-4290-a7b4-a4eb3dfaf557/chat',
+        webhookConfig: {
+          method: 'POST',
+          headers: {}
+        },
+        target: '#n8n-chat',
+        mode: 'window',
+        chatInputKey: 'chatInput',
+        chatSessionKey: 'sessionId',
+        loadPreviousSession: true,
+        metadata: {},
+        showWelcomeScreen: false,
+        defaultLanguage: 'es',
+        initialMessages: [
+          '¡Hola! 💙',
+          'Soy el asistente virtual del Club Blooming. ¿En qué puedo ayudarte hoy?'
+        ],
+        i18n: {
+          es: {
+            title: '¡Bienvenido al Club Blooming! 💙',
+            subtitle: 'Chateá con nosotros. Estamos disponibles las 24 horas para ayudarte.',
+            footer: '',
+            getStarted: 'Nueva conversación',
+            inputPlaceholder: 'Escribí tu pregunta...',
+          },
+          en: {
+            title: 'Welcome to Club Blooming! 💙',
+            subtitle: 'Chat with us. We’re here to help 24/7.',
+            footer: '',
+            getStarted: 'New Conversation',
+            inputPlaceholder: 'Type your question...',
+          },
+        },
+      });
+    </script>
